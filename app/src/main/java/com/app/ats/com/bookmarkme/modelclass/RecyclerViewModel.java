@@ -11,7 +11,7 @@ public class RecyclerViewModel {
     }
 
     public RecyclerViewModel(String title,String url) {
-        this.url = title;
+        this.title = title;
         this.url = url;
 
     }

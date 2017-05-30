@@ -1,12 +1,16 @@
 package com.app.ats.com.bookmarkme;
 
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -23,7 +27,7 @@ import de.greenrobot.event.EventBus;
 public class MainActivity extends AppCompatActivity {
 
 
-RecyclerView r;
+    RecyclerView r;
     Button b;
     EditText e,e2;
     StringBuffer sb,sb2;
@@ -34,7 +38,18 @@ RecyclerView r;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Window window = getWindow();
 
+// clear FLAG_TRANSLUCENT_STATUS flag:
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+// add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+// finally change the color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.setStatusBarColor(ContextCompat.getColor(getApplicationContext(),R.color.colorPrimaryDark));
+        }
 
         b = (Button) findViewById(R.id.button);
 
@@ -58,33 +73,34 @@ RecyclerView r;
                     Toast.makeText(getApplicationContext(),"Fill All the Fields",Toast.LENGTH_SHORT).show();
                 else if(url.isEmpty())
                     Toast.makeText(getApplicationContext(),"Fill All the Fields",Toast.LENGTH_SHORT).show();
-
-               String surl = getSharedPreferences("url",MODE_PRIVATE).getString("url","0");
-               String sname = getSharedPreferences("url",MODE_PRIVATE).getString("name","0");
-
-
-                sb = new StringBuffer();
-                sb2 = new StringBuffer();
+                else {
+                    String surl = getSharedPreferences("url", MODE_PRIVATE).getString("url", "0");
+                    String sname = getSharedPreferences("url", MODE_PRIVATE).getString("name", "0");
 
 
-                if(!surl.equals("0")) {
-                    sb2.append(surl);
-                    sb.append(sname);
+                    sb = new StringBuffer();
+                    sb2 = new StringBuffer();
+
+
+                    if (!surl.equals("0") && !sname.equals("0")) {
+                        sb2.append(surl);
+                        sb.append(sname);
+                    }
+
+
+                    sb.append(name);
+                    sb.append(",");
+
+                    sb2.append(url);
+                    sb2.append(",");
+
+
+                    getSharedPreferences("url", MODE_PRIVATE).edit().putString("name", sb.toString()).apply();
+                    getSharedPreferences("url", MODE_PRIVATE).edit().putString("url", sb2.toString()).apply();
+
+                    EventBus.getDefault().postSticky(new Broadcast("syncing"));
+
                 }
-
-
-
-                sb.append(name);
-                sb.append(",");
-
-                sb2.append(url);
-                sb2.append(",");
-
-
-                getSharedPreferences("url",MODE_PRIVATE).edit().putString("name",name);
-                getSharedPreferences("url",MODE_PRIVATE).edit().putString("url",url).apply();
-
-                EventBus.getDefault().postSticky(new Broadcast("syncing"));
             }
         });
 
@@ -107,7 +123,7 @@ RecyclerView r;
 
         String snnn=emer2.getString("name","0");
         String suuu=emer2.getString("url","0");
-
+        movieList.clear();
         if(snnn!="0"){
             String[] numbers = snnn.split(",");
             String[] numbers2 = suuu.split(",");

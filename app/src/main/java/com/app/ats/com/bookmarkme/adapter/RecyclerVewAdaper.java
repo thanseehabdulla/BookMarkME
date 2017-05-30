@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -30,12 +31,17 @@ public class RecyclerVewAdaper extends RecyclerView.Adapter<RecyclerVewAdaper.My
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title;
+        public TextView url;
         public RelativeLayout hold;
+        public Button delete;
 
         public MyViewHolder(View view) {
             super(view);
             title = (TextView) view.findViewById(R.id.title);
+            url = (TextView) view.findViewById(R.id.url);
             hold = (RelativeLayout) view.findViewById(R.id.hold);
+            delete = (Button) view.findViewById(R.id.button2);
+
         }
     }
 
@@ -54,25 +60,75 @@ public class RecyclerVewAdaper extends RecyclerView.Adapter<RecyclerVewAdaper.My
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(MyViewHolder holder, final int position) {
         RecyclerViewModel movie = moviesList.get(position);
-        holder.title.setText(movie.getTitle());
-        final String urlss=movie.getUrl();
-        holder.hold.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        if(movie.getTitle().equals("")){
+         holder.hold.setVisibility(View.GONE);
+
+        }else {
+            holder.hold.setVisibility(View.VISIBLE);
+            holder.title.setText(movie.getTitle());
+            holder.url.setText(movie.getUrl());
+            final String urlss = movie.getUrl();
+
+            holder.delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    SharedPreferences emer2 = context.getSharedPreferences("url", MODE_PRIVATE);
+
+                    String snnn = emer2.getString("name", "0");
+                    String suuu = emer2.getString("url", "0");
+
+                    StringBuffer sb, sb2;
+
+                    if (snnn != "0") {
+                        String[] numbers = snnn.split(",");
+                        String[] numbers2 = suuu.split(",");
+
+                        final String[] mobile = new String[numbers.length];
+                        final String[] mobile2 = new String[numbers.length];
+
+                        moviesList.clear();
+                        sb = new StringBuffer();
+                        sb2 = new StringBuffer();
+                        for (int i = 0; i < numbers.length; i++) {
+                            if (i == position) {
+
+                            } else {
+                                mobile[i] = (numbers[i]);
+                                mobile2[i] = (numbers2[i]);
+
+                                sb.append(mobile[i]);
+                                sb.append(",");
+
+                                sb2.append(mobile2[i]);
+                                sb2.append(",");
+                            }
+
+                        }
+                        context.getSharedPreferences("url", MODE_PRIVATE).edit().putString("name", sb.toString()).apply();
+                        context.getSharedPreferences("url", MODE_PRIVATE).edit().putString("url", sb2.toString()).apply();
+                        prepareMovieData();
+                    }
+                }
+            });
 
 
-                Intent i  = new Intent(context, Webv.class);
-                i.putExtra("url",urlss);
-                context.startActivity(i);
+            holder.hold.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
 
+                    Intent i = new Intent(context, Webv.class);
+                    i.putExtra("url", urlss);
+                    context.startActivity(i);
 
-            }
-        });
 
+                }
+            });
 
+        }
 
     }
 
@@ -100,7 +156,7 @@ public class RecyclerVewAdaper extends RecyclerView.Adapter<RecyclerVewAdaper.My
             for (int i = 0; i < numbers.length; i++) {
                 mobile[i] = (numbers[i]);
                 mobile2[i] = (numbers2[i]);
-                RecyclerViewModel movie = new RecyclerViewModel(mobile[i], "Task initiated");
+                RecyclerViewModel movie = new RecyclerViewModel(mobile[i], mobile2[i]);
                 moviesList.add(movie);
             }
 
